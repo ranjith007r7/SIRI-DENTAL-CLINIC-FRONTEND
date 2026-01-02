@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin – Appointments</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f0f0f0; }
+    select, input { padding: 6px; margin-right: 10px; }
+    
+  </style>
+</head>
+<body>
+
+  <h2>Appointments Dashboard</h2>
+
+  <!-- Filters -->
+  <label>
+    Date:
+    <input type="date" id="filterDate">
+  </label>
+
+  <label>
+    Doctor:
+    <select id="filterDoctor">
+      <option value="">All Doctors</option>
+      <option value="Dr. N. Mothi Krishna">Dr. N. Mothi Krishna</option>
+      <option value="Dr. P. Susmithaa">Dr. P. Susmithaa</option>
+    </select>
+  </label>
+  <button onclick="logout()">Logout</button>
+  
+  <button onclick="loadAppointments()">Search</button>
+
+  <!-- Table -->
+  <table>
+    <thead>
+      <tr>
+        <th>Patient</th>
+        <th>Phone</th>
+        <th>Doctor</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Problem</th>
+        <th>Action</th>
+
+      </tr>
+    </thead>
+    <tbody id="appointmentsTable">
+      <tr><td colspan="6">Loading...</td></tr>
+    </tbody>
+  </table>
+
+
+
+  <script>
+    if (!localStorage.getItem("adminLoggedIn")) {
+  window.location.href = "admin-login.html";
+}
+    async function loadAppointments() {
+      const date = document.getElementById("filterDate").value;
+      const doctor = document.getElementById("filterDoctor").value;
+
+      let url = "http://localhost:5000/api/appointments";
+      const params = [];
+
+      if (date) params.push(`date=${date}`);
+      if (doctor) params.push(`doctor=${encodeURIComponent(doctor)}`);
+
+      if (params.length) url += "?" + params.join("&");
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      const table = document.getElementById("appointmentsTable");
+      table.innerHTML = "";
+
+      if (data.length === 0) {
+        table.innerHTML = "<tr><td colspan='6'>No appointments found</td></tr>";
+        return;
+      }
+
+      data.forEach(a => {
+        const row = `
+  <tr>
+    <td>${a.patientName}</td>
+    <td>${a.phone}</td>
+    <td>${a.doctor}</td>
+    <td>${formatIndianDate(a.date)}</td>
+    <td>${a.timeSlot}</td>
+    <td>${a.problem || "-"}</td>
+    <td>
+      <button onclick="cancelAppointment('${a._id}')"
+        style="background:red;color:white;border:none;padding:5px 8px;cursor:pointer;">
+        Cancel
+      </button>
+    </td>
+  </tr>
+`;
+      
+        
+        table.innerHTML += row;
+      });
+      
+  function formatIndianDate(dateStr) {
+    const [year, month, day] = dateStr.split("-");
+    return `${day}-${month}-${year}`;
+  }
+
+
+      
+    }
+    
+
+  
+
+
+    loadAppointments();
+  </script>
+
+  <script>
+  async function cancelAppointment(id) {
+    const confirmCancel = confirm("Are you sure you want to cancel this appointment?");
+    if (!confirmCancel) return;
+
+    const res = await fetch(`http://localhost:5000/api/appointments/${id}`, {
+      method: "DELETE"
+    });
+
+    if (res.ok) {
+      alert("Appointment cancelled");
+      loadAppointments(); // refresh table
+    } else {
+      alert("Failed to cancel appointment");
+    }
+  }
+
+function logout() {
+  localStorage.removeItem("adminLoggedIn");
+  window.location.href = "admin-login.html";
+}
+
+</script>
+
+
+
+</body>
+</html>
