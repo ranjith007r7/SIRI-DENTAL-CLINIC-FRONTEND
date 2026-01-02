@@ -1,15 +1,14 @@
 {
   "builds": [
     {
-      "src": "index.html",
+      "src": "SIRI_Dental_Master_frontend/index.html",
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/SIRI_Dental_Master_frontend/index.html"
     }
   ]
 }
-
