@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SIRI Multispeciality Dental Clinic</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+    <div class="nav-left">
+        <img src="assets/teeth_4.png" class="nav-logo">
+    </div>
+
+    <ul class="nav-menu">
+        <li>About</li>
+        <li>Services</li>
+        <li><a href="doctors.html">Doctors</a></li>
+
+        <li>Contact</li>
+    </ul>
+
+    <div class="nav-actions">
+        <a href="#booking" class="btn-outline">Book Appointment</a>
+        <a href="tel:7540060604" class="btn-emergency">Call Now</a>
+    </div>
+</nav>
+
+
+<section class="hero-banner">
+    <div class="hero-text">
+        <h1>Trusted Dental Care,<br>For Your Confident Smile</h1>
+        <p>SIRI Multispeciality Dental Clinic</p>
+        <p class="hero-sub">
+            🕘 9AM – 9PM | 📞 75400 60604
+        </p>
+        <a href="#booking" class="hero-btn">Book Appointment</a>
+    </div>
+
+    <div class="hero-image">
+        <img src="assets/teeth_4.png">
+    </div>
+</section>
+
+
+
+<section class="doctors">
+    <h2>Our Specialists</h2>
+
+    <div class="doctor-cards">
+        <div class="doctor-card">
+            <h3>Dr. N. Mothi Krishna, MDS</h3>
+            <p class="speciality">Orthodontist & Aligners Specialist</p>
+            <p>BDS – The Tamil Nadu Dr. M.G.R. Medical University</p>
+            <p>MDS – Dr.NTR University of Health Sciences</p>
+        </div>
+
+        <div class="doctor-card">
+            <h3>Dr. P. Susmithaa, MDS</h3>
+            <p class="speciality">Periodontist & Implantologist</p>
+            <p>BDS – Tamil Nadu Govt Dental College</p>
+            <p>MDS – Osmania, Hyderabad</p>
+        </div>
+    </div>
+</section>
+
+<section class="services">
+    <h2>Our Dental Services</h2>
+
+    <div class="service-grid">
+        <div class="service-card">🦷 Dental Cleaning</div>
+        <div class="service-card">😁 Braces & Aligners</div>
+        <div class="service-card">🛠 Root Canal Treatment</div>
+        <div class="service-card">✨ Cosmetic Dentistry</div>
+        <div class="service-card">🦾 Dental Implants</div>
+        <div class="service-card">👶 Pediatric Dentistry</div>
+    </div>
+</section>
+
+
+
+<section id="booking" class="booking">
+    <h2>Book Your Appointment</h2>
+    <p>Quick & Easy Online Booking</p>
+    <form id="appointmentForm">
+        <input type="text" id="name" placeholder="Patient Name" required>
+        <!-- <input type="tel" id="phone" placeholder="Phone Number" required> -->
+
+        <input type="tel" id="phone" placeholder="Phone Number" required pattern="[0-9]{10}" maxlength="10" inputmode="numeric" 
+         title="Please enter a valid 10-digit mobile number">
+
+        <input type="email" id="email" placeholder="Email" required>
+
+        <input type="date" id="date" required>
+        <small id="currentTime" style="color:#555;"></small>
+        <select id="doctor" required>
+        <option value="">Select Doctor</option>
+        <option value="Dr. N. Mothi Krishna">Dr. N. Mothi Krishna</option>
+        <option value="Dr. P. Susmithaa">Dr. P. Susmithaa</option>
+        
+        </select>
+
+      <select id="timeSlot" required>
+  <option value="">Select Time Slot</option>
+</select>
+
+<p id="slotMessage" style="color:red; margin-top:8px;"></p>
+
+
+        <textarea id="problem" placeholder="Dental Problem" maxlength="250"
+  rows="4"></textarea>
+  <small id="charCount">0 / 250</small>
+
+
+        <button type="submit" id="bookBtn">
+  <span id="btnText">Book Appointment</span>
+  <span id="btnLoader" style="display:none;">⏳ Booking...</span>
+</button>
+
+    </form>
+    
+</section>
+
+
+<footer>
+    <p>© 2025 SIRI Multispeciality Dental Clinic</p>
+</footer>
+
+<script src="js/booking.js"></script>
+<script>
+const ALL_SLOTS = [
+  "09:00 AM","09:30 AM","10:00 AM","10:30 AM",
+  "11:00 AM","11:30 AM","12:00 PM","12:30 PM",
+  "01:00 PM","01:30 PM","02:00 PM","02:30 PM",
+  "03:00 PM","03:30 PM","04:00 PM","04:30 PM",
+  "05:00 PM","05:30 PM","06:00 PM","06:30 PM",
+  "07:00 PM","07:30 PM","08:00 PM","08:30 PM"
+];
+</script>
+
+
+
+<script>
+  const doctorSelect = document.getElementById("doctor");
+  const dateInput = document.getElementById("date");
+  const timeSlotSelect = document.getElementById("timeSlot");
+  const slotMessage = document.getElementById("slotMessage");
+
+  async function loadSlots() {
+  const doctor = doctorSelect.value;
+  const date = dateInput.value;
+
+  if (!doctor || !date) return;
+
+  timeSlotSelect.innerHTML = '<option value="">Loading...</option>';
+  slotMessage.textContent = "";
+
+  try {
+    const res = await fetch(
+      `https://siri-dental-clinic.onrender.com/api/appointments/availability?doctor=${encodeURIComponent(doctor)}&date=${date}`
+    );
+
+    const data = await res.json();
+
+    timeSlotSelect.innerHTML = '<option value="">Select Time Slot</option>';
+
+    const today = new Date().toISOString().split("T")[0];
+    const currentMinutes = getCurrentMinutes();
+
+    ALL_SLOTS.forEach(slot => {
+      if (data.bookedSlots.includes(slot)) return;
+
+      if (date === today && timeToMinutes(slot) <= currentMinutes) return;
+
+      const option = document.createElement("option");
+      option.value = slot;
+      option.textContent = slot;
+      timeSlotSelect.appendChild(option);
+    });
+
+    if (timeSlotSelect.options.length === 1) {
+      slotMessage.textContent = "No slots available. Try another doctor/date.";
+    }
+
+  } catch (err) {
+    console.error(err);
+    slotMessage.textContent = "Unable to load time slots. Try again.";
+  }
+}
+
+
+  doctorSelect.addEventListener("change", loadSlots);
+  dateInput.addEventListener("change", loadSlots);
+
+  function timeToMinutes(timeStr) {
+  const [time, period] = timeStr.split(" ");
+  let [hours, minutes] = time.split(":").map(Number);
+
+  if (period === "PM" && hours !== 12) hours += 12;
+  if (period === "AM" && hours === 12) hours = 0;
+
+  return hours * 60 + minutes;
+}
+
+function getCurrentMinutes() {
+  const now = new Date();
+  return now.getHours() * 60 + now.getMinutes();
+}
+
+function updateCurrentTime() {
+  const now = new Date();
+  document.getElementById("currentTime").textContent =
+    "Current time: " + now.toLocaleTimeString("en-IN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true
+    });
+}
+
+updateCurrentTime();
+setInterval(updateCurrentTime, 60000);
+
+</script>
+<script>
+const form = document.getElementById("appointmentForm");
+form.addEventListener("submit", async (e) => {
+  console.log("🚀 Submit button clicked");
+  e.preventDefault();
+
+  const bookBtn = document.getElementById("bookBtn");
+  const btnText = document.getElementById("btnText");
+  const btnLoader = document.getElementById("btnLoader");
+
+  // 🔒 Disable button & show loader
+  bookBtn.disabled = true;
+  btnText.style.display = "none";
+  btnLoader.style.display = "inline";
+
+  // ✅ IMPORTANT: create formData properly
+  const formData = {
+    patientName: document.getElementById("name").value.trim(),
+    phone: document.getElementById("phone").value.trim(),
+    email: document.getElementById("email").value.trim(),
+    doctor: doctorSelect.value,
+    date: dateInput.value,
+    timeSlot: timeSlotSelect.value,
+    problem: document.getElementById("problem").value.trim()
+  };
+  console.log("📦 Form data:", formData);
+  try {
+    const response = await fetch("https://siri-dental-clinic.onrender.com/api/appointments", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData)
+    });
+
+    if (!response.ok) {
+      throw new Error("Booking failed");
+    }
+
+    alert("Appointment booked successfully!");
+
+    // OPTIONAL: reset form
+    form.reset();
+    bookBtn.disabled = false;
+    btnText.style.display = "inline";
+    btnLoader.style.display = "none";
+
+  } catch (error) {
+    alert("Something went wrong. Please try again.");
+
+    // 🔓 Re-enable button on failure
+    bookBtn.disabled = false;
+    btnText.style.display = "inline";
+    btnLoader.style.display = "none";
+  }
+});
+</script>
+
+<script>
+  const date_Input = document.getElementById("date");
+
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+
+  date_Input.min = `${yyyy}-${mm}-${dd}`;
+</script>
+
+
+<script>
+  const problemInput = document.getElementById("problem");
+  const charCount = document.getElementById("charCount");
+
+  problemInput.addEventListener("input", () => {
+    charCount.textContent = `${problemInput.value.length} / 250`;
+  });
+</script>
+
+
+
+</body>
+</html>
