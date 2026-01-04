@@ -2,7 +2,7 @@ async function login() {
   const password = document.getElementById("password").value;
   const error = document.getElementById("error");
 
-  const res = await fetch("http://localhost:5000/api/admin/login", {
+  const res = await fetch("https://siri-dental-clinic.onrender.com/api/admin/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ password })
@@ -17,3 +17,4 @@ async function login() {
     error.textContent = "Invalid admin password";
   }
 }
+
