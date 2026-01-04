@@ -63,7 +63,7 @@
       const date = document.getElementById("filterDate").value;
       const doctor = document.getElementById("filterDoctor").value;
 
-      let url = "http://localhost:5000/api/appointments";
+      let url = "https://siri-dental-clinic.onrender.com/api/appointments";
       const params = [];
 
       if (date) params.push(`date=${date}`);
@@ -125,7 +125,7 @@
     const confirmCancel = confirm("Are you sure you want to cancel this appointment?");
     if (!confirmCancel) return;
 
-    const res = await fetch(`http://localhost:5000/api/appointments/${id}`, {
+    const res = await fetch(`https://siri-dental-clinic.onrender.com/api/appointments/${id}`, {
       method: "DELETE"
     });
 
@@ -148,3 +148,4 @@ function logout() {
 
 </body>
 </html>
+
